@@ -1,0 +1,286 @@
+/* Always set the map height explicitly to define the size of the div
+* element that contains the map. */
+#map {
+height: 100%;
+}
+/* Optional: Makes the sample page fill the window. */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+#map .gm-style-iw {
+    width: 350px !important;
+    top: 15px !important;
+    /*left: 25px !important;*/
+    background-color: #fff;
+    box-shadow: 0 1px 6px rgba(178,178,178,0.6);
+    animation-name: fade;
+    animation-duration: 0.5s;
+}
+#map .gm-style-iw div {
+    width: 100%;
+    max-width: 100%!important;
+}
+#map #iw-container .iw-title {
+    font-size: 22px;
+    font-weight: 400;
+    background-color: #D52B1E;
+    color: white;
+    display: block;
+    padding: 10px;
+    width: auto;
+}
+#map #iw-container .iw-content {
+    padding: 10px;
+    width: auto;
+}
+
+#map .gm-style > div > div > div > div > div > div[style*="background-color: rgb(255, 255, 255);"] {
+    background-color: transparent !important; /* for bug fix background of description box */
+}
+
+#map .gm-style > div > div > div > div > div > div[style*="background-color: rgba(0, 0, 0, 0.2);"] {
+    background: transparent !important; /* for bug fix background of description box */
+    box-shadow: none !important; /* for bug fix box-shadow of description box */
+}
+
+@media only screen and (max-width: 450px) {
+    #map .gm-style-iw {
+    width: 300px !important;
+    }
+}
+
+@media only screen and (max-width: 370px) {
+    #map .gm-style-iw {
+    width: 275px !important;
+    }
+}
+
+@media only screen and (max-width: 360px) {
+    #map .gm-style-iw + div {
+    right: 0 !important;
+    }
+}
+
+@media only screen and (max-width: 340px) {
+    #map .gm-style-iw + div {
+    right: -20px !important;
+    }
+}
+
+@media only screen and (max-width: 330px) {
+    #map .gm-style-iw + div {
+    right: -30px !important;
+    }
+}
+
+@media only screen and (max-width: 320px) {
+    #map .gm-style-iw + div {
+    right: -40px !important;
+    }
+}
+
+.search-section .search-header-container {
+    background: #f6f6f7;
+}
+
+.search-section .dealers-header-wrapper {
+    width: 100%;
+    position: relative;
+}
+
+.search-section .search-list {
+    top: 0;
+    
+    width: 380px;
+    max-width: 90%;
+    position: absolute;
+    background: rgba(1, 49, 69, 0.8);
+    z-index: 0;
+    z-index: 1;
+    left: 0;
+    -webkit-transition: left 0.5s;
+    -o-transition: left 0.5s;
+    transition: left 0.5s;
+}
+
+.search-section .search-list .dealers-opener {
+    position: absolute;
+    top: 22px;
+    right: -24px;
+    padding: 26px 6px 26px 9px;
+    background: rgba(1, 49, 69, 0.7);
+    color: #fff;
+    font-size: 24px;
+    z-index: -1;
+    cursor: pointer;
+}
+
+.search-section .search-list .dealers-opener:before {
+    -webkit-transform: rotate(180deg);
+    -ms-transform: rotate(180deg);
+    -o-transform: rotate(180deg);
+    transform: rotate(180deg);
+    display: block;
+}
+
+.search-section .dealer-open-search .search-list .dealers-opener:before {
+    -webkit-transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+}
+
+.search-section .dealers-search-menu {
+    padding: 20px 30% 20px 50px;
+    background: #f6f6f7;
+    overflow: hidden;
+    -webkit-transition: padding 0.5s;
+    -o-transition: padding 0.5s;
+    transition: padding 0.5s;
+}
+
+.search-section .dealer-open-search .search-list {
+    left: 0;
+}
+
+.search-section .dealer-open-search .dealers-search-menu {
+    padding: 20px 6px 20px 440px;
+}
+
+.search-section .search-map-wrapper {
+    height: 637px; /*600px;*/
+}
+
+.search-section .search-list-header-wrapper {
+    background: #ed1c24;
+}
+
+.search-section .search-list-header {
+    background: #00334c;
+    color: #fff;
+    width: 100%;
+    padding: 10px 0 10px 10px;
+    position: relative;
+}
+
+.search-section .search-list-header h1 {
+    font-size: 1.4rem;
+    margin: 0;
+    text-transform: uppercase
+}
+
+.search-section .search-list-header h3 span {
+    color: #ed1c24;
+}
+
+.search-section .search-list-wrapper {
+    overflow-y: auto;
+    overflow-x: hidden;
+    color: #fff;
+    height: 602px; /*560px;*/
+}
+
+.search-section .search-list-wrapper .collapsible .collapsible-body {
+    border: 0;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.search-list-wrapper ul {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+}
+
+.search-list-wrapper ul li {
+    list-style-type: none;
+}
+
+.search-list-wrapper ul li .collapsible-header,
+.search-section .search-list-wrapper h2 {
+    background: rgba(1, 49, 69, 0.5);
+    color: #aacedc;
+    text-transform: uppercase;
+    border: 0;
+    border-bottom: 2px solid #163c4b;
+    position: relative;
+    font-size: 15px;
+    padding: 15px;
+    cursor: pointer;
+}
+
+.collapsible-header:after {
+    content: '-';
+    font-size: 20px;
+    color: #aacedc;
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    -webkit-transform: translateY(-50%);
+    -moz-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    -o-transform: translateY(-50%);
+    transform: translateY(-50%);
+}
+
+.collapsible-header.active:after {
+    content: '+';
+}
+
+.search-section .search-list-wrapper h2 {
+    border: 0;
+    margin: 0 0 20px;
+}
+
+.search-list-wrapper ul li .collapsible-body .suzuki-default-btn {
+    margin: 0;
+    margin-left: 232px;
+}
+
+.search-list-wrapper input[type="text"] {
+    border-radius: 0;
+    background: transparent;
+    border: 2px solid #163c4b;
+    color: #fff;
+    text-transform: uppercase;
+    box-shadow: none;
+    position: relative;
+    margin-bottom: 10px;
+    cursor: pointer;
+    padding: 0 10px;
+    width: 100%;
+    height: 5rem;
+}
+
+.search-list-wrapper input[type="checkbox"] {
+    height: 2rem;
+    margin: 0px 0 0;
+}
+
+#filters label{
+    color: #aacedc;
+}
+.search-submit {
+    display: inline-block;
+    text-transform: uppercase;
+    background: #D52B1E;
+    overflow: hidden;
+    padding: 10px 10px 10px 10px;
+    margin-top: 20px;
+    position: relative;
+    border: 1px solid transparent;
+    color: #fff;
+    -webkit-transition: all 0.3s ease-in-out;
+    -moz-transition: all 0.3s ease-in-out;
+    -ms-transition: all 0.3s ease-in-out;
+    -o-transition: all 0.3s ease-in-out;
+    transition: all 0.3s ease-in-out;
+    margin-left: 70%;
+}
+
+.search-submit:hover {
+    background: #013145;
+}
