@@ -1,1 +1,94 @@
-hello world
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Simple Map</title>
+        <meta name="viewport" content="initial-scale=1.0">
+        <meta charset="utf-8">
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+        <script type="text/javascript" src="assets/js/bootstrap.js"></script>
+        <link rel="stylesheet" type="text/css" href="assets/css/styles.css"/>
+        <link rel="stylesheet" type="text/css" href="assets/css/bootstrap.css"/>
+    </head>
+    <body>
+        <div class="search-section">
+            <div class="search-header-container">
+                <div class="search-list">
+                    <div class="search-list-header-wrapper">
+                        <div class="search-list-header">
+                            <h1>Map Search</h1>
+                        </div>
+                    </div>
+                    <div class="search-list-wrapper">
+                        <ul class="collapsible" data-collapsible="expandable">
+                            <li>
+                                <div class="collapsible-header" onclick="toggleHeader(this);">location</div>
+                                <div class="collapsible-body">
+                                    <input type="text" class="search-location-input" placeholder="Search Box" id="search-input"/>
+
+                                    <!-- <button type="submit" class="search-submit" onclick="triggerMapSearch();"><span class="glyphicon glyphicon-search"></span> SEARCH</button> -->
+                                </div>
+                            </li>
+                            <li>
+                                <div class="collapsible-header" onclick="toggleHeader(this);">filters</div>
+                                <div class="collapsible-body">
+                                    <div id="filters">
+                                        <ul>
+                                            <li>
+                                                <label>Bar</label>
+                                                <input type="checkbox" name="restaurant" id="bar" value="Bar">
+                                            </li>
+                                            <li>
+                                                <label>Café</label>
+                                                <input type="checkbox" name="restaurant" id="café" value="Café">
+                                            </li>
+                                            <li>
+                                                <label>Buffet</label>
+                                                <input type="checkbox" name="restaurant" id="buffet" value="Buffet">
+                                            </li>
+                                            <li>
+                                                <label>Lechon</label>
+                                                <input type="checkbox" name="restaurant" id="lechon" value="Lechon">
+                                            </li>
+                                            <li>
+                                                <label>Barbecue</label>
+                                                <input type="checkbox" name="restaurant" id="barbecue" value="Barbecue">
+                                            </li>
+                                            <li>
+                                                <label>Lantaw</label>
+                                                <input type="checkbox" name="restaurant" id="lantaw" value="Lantaw">
+                                            </li>
+                                            <li>
+                                                <label>Seafood</label>
+                                                <input type="checkbox" name="restaurant" id="seafood" value="Seafood">
+                                            </li>
+                                            <li>
+                                                <label>Japanese</label>
+                                                <input type="checkbox" name="restaurant" id="japanese" value="Japanese">
+                                            </li>
+                                            <li>
+                                                <label>Italian</label>
+                                                <input type="checkbox" name="restaurant" id="italian" value="Italian">
+                                            </li>
+                                            <li>
+                                                <label>Mexican</label>
+                                                <input type="checkbox" name="restaurant" id="mexican" value="Mexican">
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="search-map-wrapper">
+                <div id="map"></div>
+            </div>
+        </div>
+        <!-- AIzaSyAPfIUgOv-iknRMQKXRVEd58gy9s_hyIVs -->
+        <!-- AIzaSyA7FYgY7bx9uA3A-V5Yd3kbnHAOvacSTCc -->
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAPfIUgOv-iknRMQKXRVEd58gy9s_hyIVs&libraries=places&callback=initMap"
+        async defer></script>
+        <script type="text/javascript" src="assets/js/script.js"></script>
+    </body>
+</html>
