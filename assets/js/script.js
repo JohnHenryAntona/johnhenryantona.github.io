@@ -41,8 +41,23 @@ var MapRenderer = {
             type: ['restaurant', 'food']
         }, this.callback);
         // Create the search box and link it to the UI element.
-        var input = document.getElementById('search-input');
+        var input = document.getElementById('search-input'),
+        request;
         this.searchBox = new google.maps.places.SearchBox(input);
+        var _self = MapRenderer;
+        if (jQuery(input).val().match(/\S/)) {
+            request = {
+                query: jQuery(input).val()
+            };
+            if (_self.searchBox.getBounds()) {
+                request.bounds = _self.searchBox.getBounds();
+            }
+            this.service.textSearch(request, function(places) {
+            //set the places-property of the SearchBox
+            //places_changed will be triggered automatically
+                _self.searchBox.set('places', places || [])
+            });
+        }
         // Bias the SearchBox results towards current map's viewport.
         this.listenBoundsChange();
         // Listen for the event fired when the user selects a prediction and retrieve
