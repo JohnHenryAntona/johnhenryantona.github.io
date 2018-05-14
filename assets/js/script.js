@@ -3,6 +3,7 @@ var MapRenderer = {
     infoWindow: null,
     markers: [],
     markerGroups: {restaurants: []},
+    markerCluster: null,
     bounds: null,
     service: null,
     place: null,
@@ -26,9 +27,16 @@ var MapRenderer = {
         japanese: false,
         italian: false,
         mexican: false,
+        inbound: false,
+        outbound: false
     },
     currentFilters: [],
     filterStatus: 0,
+    circles: [],
+    listeners: [],
+    drawerPanel: null,
+    drawingModes: null,
+    drawingModesDefault: [],
     init: function() {
         this.map = new google.maps.Map(document.getElementById('map'), this.mapOptions);
         this.infoWindow = new google.maps.InfoWindow();
@@ -44,25 +52,62 @@ var MapRenderer = {
         var input = document.getElementById('search-input'),
         request;
         this.searchBox = new google.maps.places.SearchBox(input);
-        var _self = MapRenderer;
-        if (jQuery(input).val().match(/\S/)) {
-            request = {
-                query: jQuery(input).val()
-            };
-            if (_self.searchBox.getBounds()) {
-                request.bounds = _self.searchBox.getBounds();
-            }
-            this.service.textSearch(request, function(places) {
-            //set the places-property of the SearchBox
-            //places_changed will be triggered automatically
-                _self.searchBox.set('places', places || [])
-            });
-        }
+        // var _self = MapRenderer;
+        // if (jQuery(input).val().match(/\S/)) {
+        //     request = {
+        //         query: jQuery(input).val()
+        //     };
+        //     if (_self.searchBox.getBounds()) {
+        //         request.bounds = _self.searchBox.getBounds();
+        //     }
+        //     this.service.textSearch(request, function(places) {
+        //     //set the places-property of the SearchBox
+        //     //places_changed will be triggered automatically
+        //         _self.searchBox.set('places', places || [])
+        //     });
+        // }
+        this.loadDrawer();
         // Bias the SearchBox results towards current map's viewport.
         this.listenBoundsChange();
         // Listen for the event fired when the user selects a prediction and retrieve
         // more details for that place.
         this.listenPlacesChange();
+
+        // var drawingManager = new google.maps.drawing.DrawingManager({
+        //   drawingMode: google.maps.drawing.OverlayType.MARKER,
+        //   drawingControl: true,
+        //   drawingControlOptions: {
+        //     position: google.maps.ControlPosition.TOP_CENTER,
+        //     drawingModes: ['marker', 'circle', 'polygon', 'polyline', 'rectangle']
+        //   },
+        //   markerOptions: {icon: 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png'},
+        //   circleOptions: {
+        //     fillColor: '#ffff00',
+        //     fillOpacity: 1,
+        //     strokeWeight: 5,
+        //     clickable: false,
+        //     editable: true,
+        //     zIndex: 1
+        //   }
+        // });
+        // drawingManager.setMap(this.map);
+    },
+    loadDrawer: function() {
+        return this.createPanel().show();
+    },
+    isMarkerInbound: function(circle, marker) {
+        bounds = circle.getBounds();
+        markPosition = marker.position;
+        latLngPos = new google.maps.LatLng(marker.position.lat(), marker.position.lng());
+        /**
+         * A google.maps.LatLngBounds is a rectangle.
+         * You need a polygon "contains" function.
+         * For a circle this can be reduced to testing whether
+         * the point is less than the radius away from the center.
+         */
+        distanceBetween = (google.maps.geometry.spherical.computeDistanceBetween(marker.getPosition(), circle.getCenter()) <= circle.getRadius());
+        return distanceBetween;
+        // return bounds.contains(latLngPos);
     },
     callback: function(results, status) {
         this.bounds = new google.maps.LatLngBounds();
@@ -84,7 +129,6 @@ var MapRenderer = {
                 // Create markers and plot to map
                 _self.createMarker(results[i]);
                 _self.bounds.extend(results[i].geometry.location);
-                console.log(results[i], i);
             }
             _self.map.fitBounds(_self.bounds);
         }
@@ -108,8 +152,10 @@ var MapRenderer = {
 
         _self.place = marker;
         marker.filter = 'all';
+        marker.properties = {};
+        marker.properties.inbound = false;
+        marker.properties.outbound = false;
         this.specialties.forEach(function(index){
-            console.log(_self.place.title);
             if ( _self.place.title.indexOf(camelize(index)) > -1 ) {
                 marker.filter = index;
                 if ( _self.place.title.indexOf('Yakiniku') > -1 && index == 'japanese') {
@@ -135,11 +181,12 @@ var MapRenderer = {
 
         // Add custom css on info window and render contents
         _self.stylizeInfoWindow();
-
         var currentLocation = 'current+location';
+        marker.infoWindow = _self.createInfoWindow(place, currentLocation);
+
         google.maps.event.addListener(marker, 'click', function() {
-            _self.map.setZoom(12);
-            _self.infoWindow.setContent("<div id='iw-container'><div class='iw-title'><b>" + place.name + "</b></div><div class='iw-content'><span>" + place.formatted_address + "</span></br><a href='https://maps.google.com/maps?saddr=" + currentLocation + "&daddr=" + place.formatted_address + "' target='_blank'>Directions</a></div><div>");
+            // _self.map.setZoom(12);
+            _self.infoWindow.setContent(_self.createInfoWindow(place, currentLocation));
             _self.infoWindow.open(_self.map, this);
         });
 
@@ -170,6 +217,10 @@ var MapRenderer = {
                     }
             });
         });
+    },
+    createInfoWindow: function(place, currentLocation) {
+        var content = "<div id='iw-container'><div class='iw-title'><b>" + place.name + "</b></div><div class='iw-content'><span>" + place.formatted_address + "</span></br><a href='https://maps.google.com/maps?saddr=" + currentLocation + "&daddr=" + place.formatted_address + "' target='_blank'>Directions</a></div><div>";
+        return content;
     },
     stylizeInfoWindow: function() {
         google.maps.event.addListener(this.infoWindow, 'domready', function() {
@@ -231,7 +282,6 @@ var MapRenderer = {
                     console.log("Returned place contains no geometry");
                     return;
                 }
-console.log(place);
                 // Create markers and plot to map
                 _self.createMarker(place);
             });
@@ -250,7 +300,279 @@ console.log(place);
 
         });
         this.filterStatus = 1;
-    }
+    },
+    resetFilters: function() {
+        for (option in this.filters) {
+            if (this.filters[option]) {
+                this.filters[option] = false;
+            }
+        }
+        this.filter_markers(this.markerGroups.restaurants, false);
+    },
+    filter_markers: function(markers = null, override = true) {
+        set_filters = this.get_set_options()
+        // for each marker, check to see if all required options are set
+        if (markers != null) {
+            markers = markers;
+        } else {
+            markers = this.markerGroups;
+        }
+        for (i = 0; i < markers.length; i++) {
+            marker = markers[i];
+            // start the filter check assuming the marker will be displayed
+            // if any of the required features are missing, set 'keep' to false
+            // to discard this marker
+            keep = true
+            for (opt = 0; opt < set_filters.length; opt++) {
+                if (!marker.properties[set_filters[opt]] && override) {
+                    keep = false;
+                }
+            }
+            this.displayMarker(marker, keep);
+        }
+    },
+    get_set_options: function() {
+        ret_array = []
+        for (option in this.filters) {
+            if (this.filters[option]) {
+                ret_array.push(option)
+            }
+        }
+        return ret_array;
+    },
+    displayMarker: function(marker, show = true) {
+        marker.setVisible(show);
+        if (show) {
+            if (Object.size(marker.MarkerLabel)) {
+                jQuery(marker.MarkerLabel.div).show();
+            }
+        } else {
+            if (Object.size(marker.MarkerLabel)) {
+                jQuery(marker.MarkerLabel.div).hide();
+            }
+            // marker.infoWindow.close();
+        }
+    },
+    displayInboundMarkers: function(show = true) {
+        if (!Object.size(this.circles)) {
+            return false;
+        }
+        var _self = MapRenderer;
+        circle = this.circles[0];
+        jQuery.each(this.markerGroups.restaurants, function() {
+            if (_self.isMarkerInbound(circle, this)) {
+                _self.displayMarker(this, show);
+            }
+        });
+    },
+    displayOutboundMarkers: function(show = true) {
+        if (!Object.size(this.circles)) {
+            return false;
+        }
+        var _self = MapRenderer;
+        circle = this.circles[0];
+        jQuery.each(this.markerGroups.restaurants, function() {
+            if (!_self.isMarkerInbound(circle, this)) {
+                _self.displayMarker(this, show);
+            }
+        });
+    },
+    clusterMarkers: function(markers) {
+        this.markerCluster = new MarkerClusterer(this.map, markers, {
+            ignoreHiddenMarkers: true,
+            imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'
+        });
+        this.markerCluster.onCreateComplete = function(markers){
+            var _self = MapRenderer;
+            if (!_self.hasCircles() || _self.markerCluster.new_markers) {
+                _self.markerCluster.new_markers = false;
+                _self.toggleClusters();
+            }
+        };
+    },
+    clusterRepaint: function(){
+        if (this.markerCluster) {
+            this.markerCluster.repaint();
+        }
+    },
+    createPanel: function() {
+        this.drawingModes = [google.maps.drawing.OverlayType.CIRCLE];
+        this.drawingModesDefault = [
+            google.maps.drawing.OverlayType.MARKER,
+            google.maps.drawing.OverlayType.CIRCLE,
+            google.maps.drawing.OverlayType.POLYGON,
+            google.maps.drawing.OverlayType.POLYLINE,
+            google.maps.drawing.OverlayType.RECTANGLE
+          ];
+        var drawingManager = new google.maps.drawing.DrawingManager({
+            drawingMode: null,
+            drawingControl: true,
+            drawingControlOptions: {
+                position: google.maps.ControlPosition.TOP_CENTER,
+                drawingModes: this.drawingModes
+            },
+            markerOptions: {
+                icon: 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png'
+            },
+            circleOptions: {
+                clickable: false,
+                editable: false,
+                zIndex: 1,
+                // metres
+                radius: 100000,
+                fillColor: '#fff',
+                fillOpacity: .6,
+                strokeColor: '#313131',
+                strokeOpacity: .4,
+                strokeWeight: .8
+            }
+        });
+        var _self = MapRenderer;
+        listener = google.maps.event.addListener(drawingManager, 'circlecomplete', function(shape){
+            _self.onCircleComplete(shape, _self);
+        });
+        this.listeners.push(listener);
+        this.drawerPanel = drawingManager;
+        this.circles = [];
+        return this;
+    },
+    show: function(){
+        this.drawerPanel.setMap(this.map);
+        this.displayCenterMarker(true);
+        this.displayCircles(true);
+        jQuery('[title="Stop drawing"]').trigger('click');
+        return this;
+    },
+    hide: function(){
+        this.drawerPanel.setMap(null);
+        this.displayCenterMarker(false);
+        this.displayCenterInfo(false);
+        this.displayCircles(false);
+        return this;
+    },
+    onCircleComplete: function(shape, _self){
+
+        if (shape == null || (!(shape instanceof google.maps.Circle))) return;
+
+        if (_self.circles.length) {
+            _self.circles[0].setMap(null);
+            _self.circles = [];
+        }
+
+        centerMarker = _self.createCenterMarker(shape);
+
+        //push the circles onto the array
+        _self.circles.push(shape);
+        //reset filters
+        _self.calibrateMarkersBoundings(_self.circles[0],_self.markerGroups.restaurants);
+        jQuery('[title="Stop drawing"]').trigger('click');
+    },
+    createCenterMarker: function(shape){
+        var _self = MapRenderer;
+        centerMarker = new google.maps.Marker({
+            position: shape.getCenter(),
+            title: 'Location',
+            map: this.map,
+            draggable: true
+        });
+        centerInfo = this.createCenterInfo();
+        // attach shape to marker
+        shape.bindTo('center', centerMarker, 'position');
+
+        // get some latLng object and Question if it's contained in the circle:
+        marker_dragend = google.maps.event.addListener(centerMarker, 'dragend', function() {
+            // latLngCenter = new google.maps.LatLng(centerMarker.position.lat(), centerMarker.position.lng());
+            // bounds = centerMarker.getBounds();
+            _self.calibrateMarkersBoundings(_self.circles[0],_self.markerGroups.restaurants);
+        });
+
+        _self.stylizeInfoWindow();
+        marker_click = google.maps.event.addListener(centerMarker, 'click', function() {
+            _self.infoWindow.setContent(_self.createInfoWindow(marker));
+            centerInfo.open(_self.map, centerMarker);
+        });
+
+        marker_drag = google.maps.event.addListener(centerMarker, 'drag', function() {
+            centerInfo.close();
+        });
+
+        //store listeners so we can unbind them later if needed
+        this.listeners.push(marker_dragend);
+        this.listeners.push(marker_click);
+        this.listeners.push(marker_drag);
+
+        if (Object.size(this.centerMarker)) {
+            this.centerMarker.setMap(null);
+        }
+        this.centerMarker = centerMarker;
+        return this.centerMarker;
+    },
+    createCenterInfo: function(){
+        contentCenter = '<span class="infowin">Center Marker (draggable)</span>';
+        centerInfo = new google.maps.InfoWindow({
+            content: contentCenter
+        });
+        if (Object.size(this.centerInfo)) {
+            this.centerInfo.setMap(null);
+        }
+        this.centerInfo = centerInfo;
+        return this.centerInfo;
+    },
+    displayCenterMarker :function(show = true){
+        if (Object.size(this.centerMarker)) {
+            this.centerMarker.setVisible(show);
+        }
+    },
+    displayCenterInfo :function(show = true){
+        if (Object.size(this.centerInfo)) {
+            if (show) {
+                this.centerInfo.open(this.map, this.centerMarker);
+            } else {
+                this.centerInfo.close();
+            }
+        }
+    },
+    displayCircles: function(show = true){
+        if (Object.size(this.circles)) {
+            for (var key in this.circles) {
+                this.circles[key].setVisible(show);
+            }
+        }
+    },
+    hasCircles: function(){
+        return (!!Object.size(this.circles));
+    },
+    clearCircles: function(){
+        if (this.circles.length) {
+            this.circles[0].setMap(null);
+            this.circles = [];
+        }
+        if (Object.size(this.centerMarker)) {
+            this.centerMarker.setMap(null);
+        }
+    },
+    calibrateMarkersBoundings: function(circle, markers) {
+        var _self = MapRenderer;
+        jQuery.each(markers, function(key, marker) {
+            if (_self.isMarkerInbound(circle, marker)) {
+                marker.properties.inbound = false;
+                marker.properties.outbound = true;
+            } else {
+                marker.properties.inbound = true;
+                marker.properties.outbound = false;
+            }
+        });
+
+        this.resetFilters();
+        this.displayOutboundMarkers(false);
+
+        if (this.markerCluster == null) {
+            this.clusterMarkers(_self.markerGroups.restaurants);
+        }
+
+        this.clusterRepaint();
+        // this.clusterMarkers(this.markerGroups.restaurants);
+    },
 }
 
 function camelize(str) {
@@ -272,3 +594,11 @@ function toggleHeader(elm) {
         jQuery(elm).parent().find('.collapsible-body').hide();
     }
 }
+
+Object.size = function(obj) {
+    var size = 0, key;
+    for (key in obj) {
+        if (obj.hasOwnProperty(key)) size++;
+    }
+    return size;
+};
