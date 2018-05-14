@@ -8,13 +8,13 @@ var MapRenderer = {
     place: null,
     mapOptions: {
         center: {
-            lat: 10.3157,
-            lng: 123.8854
+            lat: 10.3180285, //10.3157,//
+            lng: 123.8901931, //123.8854,//
         },
         zoom: 5
     },
     iconInfo: null,
-    specialties: ['bar','café','buffet','lechon','barbecue','lantaw','seafood','japanese','italian','mexican'],
+    specialties: ['bar','café','buffet','pizza','burger','lechon','barbecue','lantaw','seafood','vegetarian','japanese','italian','mexican'],
     filters: {
         bar: false,
         café: false,
@@ -27,27 +27,53 @@ var MapRenderer = {
         italian: false,
         mexican: false,
     },
-    filterCount: 0,
     currentFilters: [],
     filterStatus: 0,
     init: function() {
+        this.map = new google.maps.Map(document.getElementById('map'), this.mapOptions);
+        this.infoWindow = new google.maps.InfoWindow();
+        this.bounds = new google.maps.LatLngBounds();
+        this.service = new google.maps.places.PlacesService(this.map);
+        this.service.textSearch({
+            location: this.mapOptions.center,
+            radius: 5000,
+            query: 'restaurant',
+            type: ['restaurant', 'food']
+        }, this.callback);
         // Create the search box and link it to the UI element.
         var input = document.getElementById('search-input');
         this.searchBox = new google.maps.places.SearchBox(input);
         // Bias the SearchBox results towards current map's viewport.
         this.listenBoundsChange();
-        
         // Listen for the event fired when the user selects a prediction and retrieve
         // more details for that place.
         this.listenPlacesChange();
     },
-    setMarkerFilter: function(place, status) {
-        // console.log(place, 'henry');
-        // var _self = MapRenderer;
-        // this.specialties.forEach(function(index){
-        //     marker.filter = _self.place.indexOf(camelize(index)) > -1 ? index : '';
-        // });
-        // this.place = null;
+    callback: function(results, status) {
+        this.bounds = new google.maps.LatLngBounds();
+        var _self = MapRenderer;
+        if (status === google.maps.places.PlacesServiceStatus.OK) {
+            for (var i = 0; i < results.length; i++) {
+                var details = _self.service.getDetails({
+                    placeId: results[i].place_id
+                }, function(place, status) {
+                    if (status === google.maps.places.PlacesServiceStatus.OK) {
+                        _self.place = place;
+                    }
+                });
+                if (!results[i].geometry) {
+                    console.log("Returned place contains no geometry");
+                    return;
+                }
+
+                // Create markers and plot to map
+                _self.createMarker(results[i]);
+                _self.bounds.extend(results[i].geometry.location);
+                console.log(results[i], i);
+            }
+            _self.map.fitBounds(_self.bounds);
+        }
+
     },
     createMarker: function(place) {
         var _self = MapRenderer;
@@ -68,49 +94,53 @@ var MapRenderer = {
         _self.place = marker;
         marker.filter = 'all';
         this.specialties.forEach(function(index){
+            console.log(_self.place.title);
             if ( _self.place.title.indexOf(camelize(index)) > -1 ) {
                 marker.filter = index;
                 if ( _self.place.title.indexOf('Yakiniku') > -1 && index == 'japanese') {
                     marker.filter = index;
                 }
             }
+            if ( _self.place.title.indexOf('Cafe') > -1 && index == 'café') {
+                marker.filter = index;
+            }
         });
         _self.place = null;
 
-        this.markerGroups.restaurants.push(marker);
+        _self.markerGroups.restaurants.push(marker);
 
-        // var bounds = new google.maps.LatLngBounds();
-        this.bounds.extend(marker.position);
+        _self.bounds.extend(marker.position);
 
         if (place.geometry.viewport) {
             // Only geocodes have viewport.
-            this.bounds.union(place.geometry.viewport);
+            _self.bounds.union(place.geometry.viewport);
         } else {
-            this.bounds.extend(place.geometry.location);
+            _self.bounds.extend(place.geometry.location);
         }
 
         // Add custom css on info window and render contents
-        this.stylizeInfoWindow();
+        _self.stylizeInfoWindow();
 
         var currentLocation = 'current+location';
         google.maps.event.addListener(marker, 'click', function() {
             _self.map.setZoom(12);
-            // _self.map.setCenter(marker.getPosition());
             _self.infoWindow.setContent("<div id='iw-container'><div class='iw-title'><b>" + place.name + "</b></div><div class='iw-content'><span>" + place.formatted_address + "</span></br><a href='https://maps.google.com/maps?saddr=" + currentLocation + "&daddr=" + place.formatted_address + "' target='_blank'>Directions</a></div><div>");
             _self.infoWindow.open(_self.map, this);
         });
 
         _self.specialties.forEach(function(index){
-            // if ( index ) {}
             google.maps.event.addDomListener(document.getElementById(index),
                 'click', function() {
+                    var value = jQuery(this).val();
+                    if ( jQuery('#'+value.toLowerCase()+':checked').length == 0 ) {
+                        _self.currentFilters.pop(index);
+                    } else {
+                        _self.currentFilters.push(index);
+                    }
                     _self.filterStatus = 0;
                     if ( !_self.filters[index] ) {
-                        // _self.filterCount++;
                       _self.filters[index] = true;
-                      _self.currentFilters.push(index);
                     } else {
-                        // _self.filterCount--;
                         if ( _self.currentFilters.indexOf(index) > -1 ) {
                             _self.filters[index] = true;
                         } else {
@@ -139,19 +169,16 @@ var MapRenderer = {
             iwCloseBtn.css({
                 opacity: '1',
                 right: '26px', top: '3px',
-                border: '7px solid #D52B1E',
+                border: '7px solid #b2b6b5',
                 width: '26px',
                 height: '26px',
                 'border-radius': '50%',
-                'box-shadow': '0 0 5px #D52B1E'
+                'box-shadow': '0 0 5px #b2b6b5'
             });
             iwCloseBtn.mouseout(function(){
                 jQuery(this).css({opacity: '1'});
             });
         });
-    },
-    markerToggleSpeacialtyClasses: function(name) {
-        var specialties = place.types;
     },
     clearOldMarkers: function() {
         this.markers.forEach(function(marker) {
@@ -177,22 +204,19 @@ var MapRenderer = {
 
             // For each place, get the icon, name and location.
             _self.bounds = new google.maps.LatLngBounds();
-            _self.service = new google.maps.places.PlacesService(_self.map);
             places.forEach(function(place) {
                 var details = _self.service.getDetails({
                     placeId: place.place_id
                 }, function(place, status) {
                     if (status === google.maps.places.PlacesServiceStatus.OK) {
                         _self.place = place;
-                        // _self.setMarkerFilter(place, status);
                     }
                 });
                 if (!place.geometry) {
                     console.log("Returned place contains no geometry");
                     return;
                 }
-                // console.log(place);
-
+console.log(place);
                 // Create markers and plot to map
                 _self.createMarker(place);
             });
@@ -201,34 +225,16 @@ var MapRenderer = {
     },
     toggleMarkerGroup: function(filter) {
         var _self = MapRenderer;
-        // for (var i = 0; i < this.markerGroups.restaurants.length; i++) {
-        if ( this.currentFilters.length > 0 ) {
-            this.markerGroups.restaurants.forEach(function(i){
-                var marker = i;
-                if ( _self.currentFilters.indexOf(i.filter) > -1 ) {
-                    marker.setVisible(true);
-                } else {
-                    marker.setVisible(false);
-                }
+        this.markerGroups.restaurants.forEach(function(i){
+            var marker = i;
+            if ( _self.currentFilters.indexOf(i.filter) > -1 || _self.currentFilters.length == 0 ) {
+                marker.setVisible(true);
+            } else {
+                marker.setVisible(false);
+            }
 
-            });
-            this.filterStatus = 1;
-            // console.log(marker.title, filter, marker.title.indexOf(camelize(filter)) );
-            // // if ( this.filterCount > 0 ) {
-            //     if (marker.title.indexOf(camelize(filter)) > -1) {
-            //         marker.setVisible(true);
-            //     } else {
-            //         // if (this.filters[marker.filter] == true) {
-            //         //     marker.setVisible(true);
-            //         // } else {
-            //             marker.setVisible(false);
-            //         // }
-            //     }
-            // } else {
-            //     marker.setVisible(true);
-            // }
-        }
-        // }
+        });
+        this.filterStatus = 1;
     }
 }
 
@@ -239,8 +245,6 @@ function camelize(str) {
 }
 
 function initMap() {
-    MapRenderer.map = new google.maps.Map(document.getElementById('map'), MapRenderer.mapOptions);
-    MapRenderer.infoWindow = new google.maps.InfoWindow();
     MapRenderer.init();
 }
 
@@ -252,21 +256,4 @@ function toggleHeader(elm) {
         jQuery(elm).addClass('active');
         jQuery(elm).parent().find('.collapsible-body').hide();
     }
-}
-
-function countFilters() {
-    result = MapRenderer.filters;
-
-    var valuesArray = Object.values(result);
-
-    if (valuesArray instanceof Array) {
-        valuesArray.forEach(function (v, i) {
-            if ( v == true ) {
-                MapRenderer.filterCount++;
-            }
-        });
-    }
-    var count = MapRenderer.filterCount;
-    return count;
-
 }

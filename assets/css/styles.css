@@ -25,7 +25,7 @@ html, body {
 #map #iw-container .iw-title {
     font-size: 22px;
     font-weight: 400;
-    background-color: #D52B1E;
+    background-color: #b2b6b5;
     color: white;
     display: block;
     padding: 10px;
@@ -92,11 +92,10 @@ html, body {
 
 .search-section .search-list {
     top: 0;
-    
-    width: 380px;
+    width: 35%;/*380px;*/
     max-width: 90%;
     position: absolute;
-    background: rgba(1, 49, 69, 0.8);
+    background: rgba(162, 167, 169, 0.8);
     z-index: 0;
     z-index: 1;
     left: 0;
@@ -158,7 +157,7 @@ html, body {
 }
 
 .search-section .search-list-header {
-    background: #00334c;
+    background: #b2b6b5;
     color: #fff;
     width: 100%;
     padding: 10px 0 10px 10px;
@@ -201,11 +200,11 @@ html, body {
 
 .search-list-wrapper ul li .collapsible-header,
 .search-section .search-list-wrapper h2 {
-    background: rgba(1, 49, 69, 0.5);
-    color: #aacedc;
+    background: rgb(162, 165, 165);
+    color: #e2dfd5;
     text-transform: uppercase;
     border: 0;
-    border-bottom: 2px solid #163c4b;
+    border-bottom: 2px solid #64696b;
     position: relative;
     font-size: 15px;
     padding: 15px;
@@ -215,7 +214,7 @@ html, body {
 .collapsible-header:after {
     content: '-';
     font-size: 20px;
-    color: #aacedc;
+    color: #e9f0f3;
     position: absolute;
     right: 20px;
     top: 50%;
@@ -243,7 +242,7 @@ html, body {
 .search-list-wrapper input[type="text"] {
     border-radius: 0;
     background: transparent;
-    border: 2px solid #163c4b;
+    border: 2px solid #64696b;
     color: #fff;
     text-transform: uppercase;
     box-shadow: none;
@@ -256,17 +255,24 @@ html, body {
 }
 
 .search-list-wrapper input[type="checkbox"] {
-    height: 2rem;
+    height: 1.5rem;
     margin: 0px 0 0;
 }
 
-#filters label{
-    color: #aacedc;
+#filters label {
+    color: #e2dfd5;
+    font-weight: normal;
+    width: 50%;
 }
+
+#filters input {
+    width: 40%;
+}
+
 .search-submit {
     display: inline-block;
     text-transform: uppercase;
-    background: #D52B1E;
+    background: #b2b6b5;
     overflow: hidden;
     padding: 10px 10px 10px 10px;
     margin-top: 20px;
