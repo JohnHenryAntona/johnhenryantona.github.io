@@ -40,11 +40,18 @@ var MapRenderer = {
     moreButton: null,
     pagination: null,
     getNextPage: null,
+    directionsDisplay : null,
+    directionsService: null,
+    currentPosition: null,
     init: function() {
         this.map = new google.maps.Map(document.getElementById('map'), this.mapOptions);
         this.infoWindow = new google.maps.InfoWindow();
         this.bounds = new google.maps.LatLngBounds();
         this.service = new google.maps.places.PlacesService(this.map);
+        this.directionsDisplay = new google.maps.DirectionsRenderer;
+        this.directionsService = new google.maps.DirectionsService;
+
+        this.directionsDisplay.setMap(this.map);
         
         // var getNextPage = null;
         var _self = MapRenderer;
@@ -73,6 +80,33 @@ var MapRenderer = {
         // Listen for the event fired when the user selects a prediction and retrieve
         // more details for that place.
         this.listenPlacesChange();
+
+        if (navigator.geolocation) {
+            var _self = MapRenderer;
+            navigator.geolocation.getCurrentPosition(function(position) {
+                _self.currentPosition = {
+                  lat: position.coords.latitude,
+                  lng: position.coords.longitude
+                };
+            });
+        }
+    },
+    calculateAndDisplayRoute: function(directionsService, directionsDisplay, place) {
+        // var selectedMode = document.getElementById('mode').value;
+        this.directionsService.route({
+          origin: 'current+location',  // Haight.
+          destination: {lat: -24.345, lng: 134.46},//{lat: place.geometry.location.lat(), lng: place.geometry.location.lng()},  // Ocean Beach.
+          // Note that Javascript allows us to access the constant
+          // using square brackets and a string value as its
+          // "property."
+          travelMode: google.maps.TravelMode['DRIVING']
+        }, function(response, status) {
+          if (status == 'OK') {
+            this.directionsDisplay.setDirections(response);
+          } else {
+            window.alert('Directions request failed due to ' + status);
+          }
+        });
     },
     clickNextPage: function(){
         if ( jQuery('#more').attr('disabled') != undefined ) {
@@ -150,6 +184,7 @@ var MapRenderer = {
         marker.properties.inbound = false;
         marker.properties.outbound = false;
         marker.geometry = place.geometry;
+        marker.place_id = place.place_id;
         // _self.specialties.forEach(function(index){
         //     if ( _self.place.title.indexOf(camelize(index)) > -1 ) {
         //         marker.filter = index;
@@ -192,6 +227,8 @@ var MapRenderer = {
 
         google.maps.event.addListener(marker, 'click', function() {
             var _this = this;
+            
+            console.log(_this);
             var details = _self.service.getDetails({
                 placeId: place.place_id
             }, function(place, status) {
@@ -205,9 +242,38 @@ var MapRenderer = {
                     });
                     _self.infoWindow.setContent(_self.createInfoWindow(place, currentLocation));
                     _self.infoWindow.open(_self.map, _this);
+
+                    // _self.specialties.forEach(function(index){
+                    //     if ( _this.title.indexOf(camelize(index)) > -1 ) {
+                    //         marker.filter = index;
+                    //         // japanese
+                    //         if ( _this.title.indexOf('Yakiniku') > -1 || _this.title.indexOf('Tokyo') || _this.title.indexOf('Nagomi') && index == 'japanese') {
+                    //             marker.filter = index;
+                    //         }
+                    //     }
+                    //     // cafe
+                    //     if ( _this.title.indexOf('Cafe') > -1 && index == 'café') {
+                    //         marker.filter = index;
+                    //     }
+                    //     // indian
+                    //     if ( _this.title.indexOf('Sbarro') > -1 && index == 'indian') {
+                    //         marker.filter = index;
+                    //     }
+                    //     // pizza
+                    //     if ( _this.title.indexOf('Pizz') > -1 && index == 'pizza') {
+                    //         marker.filter = index;
+                    //     }
+                    // });
+                    console.log(place);
+                    document.getElementById('get_directions').addEventListener('click', function() {
+                        _self.calculateAndDisplayRoute(_self.directionsService, _self.directionsDisplay,place);
+                    });
                 }
             });
+
         });
+
+         
 
         _self.specialties.forEach(function(index){
             google.maps.event.addDomListener(document.getElementById(index),
@@ -238,7 +304,8 @@ var MapRenderer = {
         });
     },
     createInfoWindow: function(place, currentLocation) {
-        var content = "<div id='iw-container'><div class='iw-title'><b>" + place.name + "</b></div><div class='iw-content'><span>" + place.formatted_address + "</span></br><a href='https://maps.google.com/maps?saddr=" + currentLocation + "&daddr=" + place.formatted_address + "' target='_blank'>Directions</a></div><div>";
+        // var content = "<div id='iw-container'><div class='iw-title'><b>" + place.name + "</b></div><div class='iw-content'><span>" + place.formatted_address + "</span></br><a href='https://maps.google.com/maps?saddr=" + currentLocation + "&daddr=" + place.formatted_address + "' target='_blank'>Directions</a></div><div>";
+        var content = "<div id='iw-container'><div class='iw-title'><b>" + place.name + "</b></div><div class='iw-content'><span>" + place.formatted_address + "</span></br><div id='get_directions' style='color:blue;'onlick='MapRenderer.calculateAndDisplayRoute(MapRenderer.directionsService, MapRenderer.directionsDisplay, place)'>Get Directions</div></div><div>";
         return content;
     },
     stylizeInfoWindow: function() {
