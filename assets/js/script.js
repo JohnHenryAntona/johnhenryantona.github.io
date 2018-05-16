@@ -94,7 +94,7 @@ var MapRenderer = {
     calculateAndDisplayRoute: function(directionsService, directionsDisplay, place) {
         // var selectedMode = document.getElementById('mode').value;
         this.directionsService.route({
-          origin: 'current+location',  // Haight.
+          origin: this.currentPosition,  // Haight.
           destination: {lat: -24.345, lng: 134.46},//{lat: place.geometry.location.lat(), lng: place.geometry.location.lng()},  // Ocean Beach.
           // Note that Javascript allows us to access the constant
           // using square brackets and a string value as its
