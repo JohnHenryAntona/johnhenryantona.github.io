@@ -61,7 +61,7 @@ var MapRenderer = {
           if (_self.getNextPage) _self.pagination.nextPage();
         };
 
-        this.service.radarSearch({
+        this.service.textSearch({
             location: this.mapOptions.center,
             radius: 15000,
             keyword: 'restaurant+in+cebu',
@@ -135,12 +135,12 @@ var MapRenderer = {
                 }
                 // Create markers and plot to map
                 _self.createMarker(results[i], i);
-                // _self.moreButton.disabled = !pagination.hasNextPage;
-                // _self.getNextPage = pagination.hasNextPage && function() {
-                //     _self.getNextPage = true;
-                //     sleep:2;
-                //     pagination.nextPage();
-                // };
+                _self.moreButton.disabled = !pagination.hasNextPage;
+                _self.getNextPage = pagination.hasNextPage && function() {
+                    _self.getNextPage = true;
+                    sleep:2;
+                    pagination.nextPage();
+                };
                 _self.bounds.extend(results[i].geometry.location);
             }
 
@@ -185,27 +185,27 @@ var MapRenderer = {
         marker.properties.outbound = false;
         marker.geometry = place.geometry;
         marker.place_id = place.place_id;
-        // _self.specialties.forEach(function(index){
-        //     if ( _self.place.title.indexOf(camelize(index)) > -1 ) {
-        //         marker.filter = index;
-        //         // japanese
-        //         if ( _self.place.title.indexOf('Yakiniku') > -1 || _self.place.title.indexOf('Tokyo') || _self.place.title.indexOf('Nagomi') && index == 'japanese') {
-        //             marker.filter = index;
-        //         }
-        //     }
-        //     // cafe
-        //     if ( _self.place.title.indexOf('Cafe') > -1 && index == 'café') {
-        //         marker.filter = index;
-        //     }
-        //     // indian
-        //     if ( _self.place.title.indexOf('Sbarro') > -1 && index == 'indian') {
-        //         marker.filter = index;
-        //     }
-        //     // pizza
-        //     if ( _self.place.title.indexOf('Pizz') > -1 && index == 'pizza') {
-        //         marker.filter = index;
-        //     }
-        // });
+        _self.specialties.forEach(function(index){
+            if ( _self.place.title.indexOf(camelize(index)) > -1 ) {
+                marker.filter = index;
+                // japanese
+                if ( _self.place.title.indexOf('Yakiniku') > -1 || _self.place.title.indexOf('Tokyo') || _self.place.title.indexOf('Nagomi') && index == 'japanese') {
+                    marker.filter = index;
+                }
+            }
+            // cafe
+            if ( _self.place.title.indexOf('Cafe') > -1 && index == 'café') {
+                marker.filter = index;
+            }
+            // indian
+            if ( _self.place.title.indexOf('Sbarro') > -1 && index == 'indian') {
+                marker.filter = index;
+            }
+            // pizza
+            if ( _self.place.title.indexOf('Pizz') > -1 && index == 'pizza') {
+                marker.filter = index;
+            }
+        });
         _self.place = null;
         console.log(marker.title, marker.filter);
 
@@ -242,29 +242,7 @@ var MapRenderer = {
                     });
                     _self.infoWindow.setContent(_self.createInfoWindow(place, currentLocation));
                     _self.infoWindow.open(_self.map, _this);
-
-                    // _self.specialties.forEach(function(index){
-                    //     if ( _this.title.indexOf(camelize(index)) > -1 ) {
-                    //         marker.filter = index;
-                    //         // japanese
-                    //         if ( _this.title.indexOf('Yakiniku') > -1 || _this.title.indexOf('Tokyo') || _this.title.indexOf('Nagomi') && index == 'japanese') {
-                    //             marker.filter = index;
-                    //         }
-                    //     }
-                    //     // cafe
-                    //     if ( _this.title.indexOf('Cafe') > -1 && index == 'café') {
-                    //         marker.filter = index;
-                    //     }
-                    //     // indian
-                    //     if ( _this.title.indexOf('Sbarro') > -1 && index == 'indian') {
-                    //         marker.filter = index;
-                    //     }
-                    //     // pizza
-                    //     if ( _this.title.indexOf('Pizz') > -1 && index == 'pizza') {
-                    //         marker.filter = index;
-                    //     }
-                    // });
-                    console.log(place);
+                    // console.log(place);
                     document.getElementById('get_directions').addEventListener('click', function() {
                         _self.calculateAndDisplayRoute(_self.directionsService, _self.directionsDisplay,place);
                     });
