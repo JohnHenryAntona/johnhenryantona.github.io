@@ -137,7 +137,9 @@ var MapRenderer = {
           // Note that Javascript allows us to access the constant
           // using square brackets and a string value as its
           // "property."
-          travelMode: google.maps.TravelMode['DRIVING']
+          provideRouteAlternatives: true,
+          travelMode: google.maps.TravelMode['DRIVING'],
+          unitSystem: google.maps.UnitSystem.METRIC
         }, function(response, status) {
           if (status == 'OK') {
             _self.directionsDisplay.setDirections(response);
