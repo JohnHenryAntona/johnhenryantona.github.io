@@ -177,8 +177,8 @@ html, body {
 }
 
 .search-section .search-list-wrapper {
-    /*overflow-y: auto;
-    overflow-x: hidden;*/
+    overflow-y: auto;
+    overflow-x: hidden;
     color: #fff;
     height: 602px; /*560px;*/
 }
@@ -189,7 +189,8 @@ html, body {
     background: rgba(0, 0, 0, 0.2);
 }
 
-.search-section .search-list-wrapper .collapsible .collapsible-body.filters-body {
+.search-section .search-list-wrapper .collapsible .collapsible-body.filters-body,
+.search-section .search-list-wrapper .collapsible .collapsible-body.ratings-body {
     height: 50vh;
     overflow-x: auto;
 }
@@ -297,4 +298,37 @@ html, body {
 
 .search-submit:hover {
     background: #013145;
+}
+
+.rating-block h2 {
+    background: rgb(105, 109, 109);
+}
+
+.rating-block .rate {
+    color: #efefef;
+}
+
+.rating-block small {
+    color: #353232;
+}
+
+.review-block-master-wrapper {
+    background: #fff;
+    padding-top: 15px;
+    padding-bottom: 15px;
+    margin-bottom: 0;
+    color: #636565;
+}
+
+.review-block .img-rounded {
+    width: 50px;
+}
+
+.review-block hr {
+    border-top: 1px solid #64696b;
+}
+
+#get_directions {
+    color: #3e3eec;
+    cursor: pointer;
 }

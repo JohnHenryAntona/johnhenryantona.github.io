@@ -21,16 +21,16 @@
                     <div class="search-list-wrapper">
                         <ul class="collapsible" data-collapsible="expandable">
                             <li class="">
-                                <div class="collapsible-header" onclick="toggleHeader(this);">search location</div>
-                                <div class="collapsible-body">
+                                <div class="collapsible-header active" onclick="toggleHeader(this);">search location</div>
+                                <div class="collapsible-body" style="display: none;">
                                     <input type="text" class="search-location-input" placeholder="Search Location" id="search-input" value="" />
                                     <button id="more" class="hide"> more</button>
                                     <!-- <button type="submit" class="search-submit" onclick="triggerMapSearch();"><span class="glyphicon glyphicon-search"></span> SEARCH</button> -->
                                 </div>
                             </li>
                             <li>
-                                <div class="collapsible-header" onclick="toggleHeader(this);">filters</div>
-                                <div class="collapsible-body filters-body">
+                                <div class="collapsible-header active" onclick="toggleHeader(this);">filters</div>
+                                <div class="collapsible-body filters-body" style="display: none;">
                                     <div id="filters">
                                         <ul>
                                             <li>
@@ -97,6 +97,84 @@
                                     </div>
                                 </div>
                             </li>
+                            <li>
+                                <div class="collapsible-header" onclick="toggleHeader(this);">Location Details</div>
+                                <div class="collapsible-body ratings-body">
+                                    <div class="form-check col-xs-12 col-sm-12 col-md-12 form-group rating-block-wrapper" style="display: none;">
+                                        <div class="rating-block">
+                                            <h4>
+                                                Average user rating
+                                            </h4>
+                                            <h2 class="bold padding-bottom-7">
+                                                <span class="rate" id="rate">4.3</span>
+                                                <small>
+                                                    / 5
+                                                </small>
+                                            </h2>
+                                            <button aria-label="Left Align" class="btn btn-warning btn-sm" type="button">
+                                                <span aria-hidden="true" class="glyphicon glyphicon-star">
+                                                </span>
+                                            </button>
+                                            <button aria-label="Left Align" class="btn btn-warning btn-sm" type="button">
+                                                <span aria-hidden="true" class="glyphicon glyphicon-star">
+                                                </span>
+                                            </button>
+                                            <button aria-label="Left Align" class="btn btn-warning btn-sm" type="button">
+                                                <span aria-hidden="true" class="glyphicon glyphicon-star">
+                                                </span>
+                                            </button>
+                                            <button aria-label="Left Align" class="btn btn-default btn-grey btn-sm" type="button">
+                                                <span aria-hidden="true" class="glyphicon glyphicon-star">
+                                                </span>
+                                            </button>
+                                            <button aria-label="Left Align" class="btn btn-default btn-grey btn-sm" type="button">
+                                                <span aria-hidden="true" class="glyphicon glyphicon-star">
+                                                </span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-check col-xs-12 col-sm-12 col-md-12 form-group review-block-master-wrapper" style="display: none;">
+                                        <div class="review-block-wrapper">
+                                            <div class="review-block-template" style="display: none;">
+                                                <div class="row">
+                                                    <div class="col-sm-3">
+                                                        <img src="http://dummyimage.com/60x60/666/ffffff&amp;text=No+Image" class="img-rounded">
+                                                        <div class="review-block-name"><a href="#">nktailor</a></div>
+                                                        <div class="review-block-date">January 29, 2016<br>1 day ago</div>
+                                                    </div>
+                                                    <div class="col-sm-9">
+                                                        <div class="`review-block-rate">
+                                                            <button type="button" class="btn btn-warning btn-xs" aria-label="Left Align">
+                                                              <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+                                                          </button>
+                                                          <button type="button" class="btn btn-warning btn-xs" aria-label="Left Align">
+                                                              <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+                                                          </button>
+                                                          <button type="button" class="btn btn-warning btn-xs" aria-label="Left Align">
+                                                              <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+                                                          </button>
+                                                          <button type="button" class="btn btn-default btn-grey btn-xs" aria-label="Left Align">
+                                                              <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+                                                          </button>
+                                                          <button type="button" class="btn btn-default btn-grey btn-xs" aria-label="Left Align">
+                                                              <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+                                                          </button>
+                                                      </div>
+                                                      <div class="review-block-title"></div>
+                                                      <div class="review-block-description">this was nice in buy. this was nice in buy. this was nice in buy. this was nice in buy this was nice in buy this was nice in buy this was nice in buy this was nice in buy</div>
+                                                  </div>
+                                              </div>
+                                              <hr/>
+                                          </div>
+                                          <div class="review-block">
+                                          </div>
+                                      </div>
+                                  </div>
+
+                                    
+                                </div>
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -107,7 +185,7 @@
         </div>
         <!-- AIzaSyAPfIUgOv-iknRMQKXRVEd58gy9s_hyIVs -->
         <!-- AIzaSyA7FYgY7bx9uA3A-V5Yd3kbnHAOvacSTCc -->
-        <script src="https://maps.googleapis.com/maps/api/js?v=3&key=AIzaSyAPfIUgOv-iknRMQKXRVEd58gy9s_hyIVs&libraries=drawing,places&callback=initMap"
+        <script src="https://maps.googleapis.com/maps/api/js?v=3&key=AIzaSyA7FYgY7bx9uA3A-V5Yd3kbnHAOvacSTCc&libraries=drawing,places&callback=initMap"
         async defer></script>
         <script type="text/javascript" src="assets/js/script.js"></script>
         <script type="text/javascript" src="assets/js/markerclusterer.js"></script>

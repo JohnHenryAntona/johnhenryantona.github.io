@@ -91,36 +91,11 @@ var MapRenderer = {
             });
         }
     },
-    calculateAndDisplayRoute: function(directionsService, directionsDisplay, place) {
-        var _self = MapRenderer;
-        this.directionsService.route({
-          origin: this.currentPosition,  // Haight.
-          destination: {lat: place.geometry.location.lat(), lng: place.geometry.location.lng()},  // Ocean Beach.
-          // Note that Javascript allows us to access the constant
-          // using square brackets and a string value as its
-          // "property."
-          travelMode: google.maps.TravelMode['DRIVING']
-        }, function(response, status) {
-          if (status == 'OK') {
-            _self.directionsDisplay.setDirections(response);
-          } else {
-            window.alert('Directions request failed due to ' + status);
-          }
-        });
-    },
-    clickNextPage: function(){
-        if ( jQuery('#more').attr('disabled') != undefined ) {
-            setTimeout(function() {
-                jQuery('#more').click();
-            }, 1000);
-        }
-    },
     callback: function(results, status, pagination) {
         this.bounds = new google.maps.LatLngBounds();
         var _self = MapRenderer;
         _self.pagination = pagination;
         if (status === google.maps.places.PlacesServiceStatus.OK) {
-            console.log(results);
             for (var i = 0; i < results.length; i++) {
                 var details = _self.service.getDetails({
                     placeId: results[i].place_id
@@ -154,15 +129,39 @@ var MapRenderer = {
             }
         },1000);
     },
+    calculateAndDisplayRoute: function(directionsService, directionsDisplay, place) {
+        var _self = MapRenderer;
+        this.directionsService.route({
+          origin: this.currentPosition,  // Haight.
+          destination: {lat: place.geometry.location.lat(), lng: place.geometry.location.lng()},  // Ocean Beach.
+          // Note that Javascript allows us to access the constant
+          // using square brackets and a string value as its
+          // "property."
+          travelMode: google.maps.TravelMode['DRIVING']
+        }, function(response, status) {
+          if (status == 'OK') {
+            _self.directionsDisplay.setDirections(response);
+          } else {
+            window.alert('Directions request failed due to ' + status);
+          }
+        });
+    },
+    clickNextPage: function(){
+        if ( jQuery('#more').attr('disabled') != undefined ) {
+            setTimeout(function() {
+                jQuery('#more').click();
+            }, 1000);
+        }
+    },
     createMarker: function(place, i) {
         var _self = MapRenderer;
-        // var details = _self.service.getDetails({
-        //     placeId: place.place_id
-        // }, function(place, status) {
-        //     if (status === google.maps.places.PlacesServiceStatus.OK) {
-        //         _self.place = place;
-        //     }
-        // });
+        var details = _self.service.getDetails({
+            placeId: place.place_id
+        }, function(place, status) {
+            if (status === google.maps.places.PlacesServiceStatus.OK) {
+                _self.place = place;
+            }
+        });
         _self.place = place;
         _self.iconInfo = {
             url: 'assets/images/icon.png',
@@ -207,7 +206,6 @@ var MapRenderer = {
             }
         });
         _self.place = null;
-        console.log(marker.title, marker.filter);
 
         _self.markerGroups.restaurants.push(marker);
 
@@ -228,30 +226,25 @@ var MapRenderer = {
         google.maps.event.addListener(marker, 'click', function() {
             var _this = this;
             
-            console.log(_this);
             var details = _self.service.getDetails({
                 placeId: place.place_id
             }, function(place, status) {
                 if (status === google.maps.places.PlacesServiceStatus.OK) {
                     _self.place = place;
-                    marker = new google.maps.Marker({
-                        map: _self.map,
-                        icon: _self.iconInfo,
-                        title: place.name,
-                        position: place.geometry.location,
-                    });
+                    _self.showMarkerDetails(place);
                     _self.infoWindow.setContent(_self.createInfoWindow(place, currentLocation));
                     _self.infoWindow.open(_self.map, _this);
+
                     // console.log(place);
                     document.getElementById('get_directions').addEventListener('click', function() {
                         _self.calculateAndDisplayRoute(_self.directionsService, _self.directionsDisplay,place);
                     });
+
+
                 }
             });
 
-        });
-
-         
+        });        
 
         _self.specialties.forEach(function(index){
             google.maps.event.addDomListener(document.getElementById(index),
@@ -281,9 +274,59 @@ var MapRenderer = {
             });
         });
     },
+    showMarkerDetails: function(place) {
+        rating_block = jQuery('.ratings-body').find('.rating-block');
+        rating_block.find('.rate').html(place.rating);
+        rate_buttons = rating_block.find('button');
+        //reset buttons rate
+        jQuery(rate_buttons).removeClass('btn-warning').addClass('btn-grey');
+        rates_count = 1;
+        if ( place.rating != undefined ) {
+            rating_block.find('button').show();
+        } else {
+            rating_block.find('button').hide();
+        }
+        jQuery(rate_buttons).each(function() {
+            if (rates_count <= parseInt(place.rating)) {
+                jQuery(this).removeClass('btn-grey');
+                jQuery(this).addClass('btn-warning');
+            } else {
+                rating_block.find('.rate').html('No rating');
+            }
+            rates_count++;
+        });
+
+        review_block_template = jQuery('.review-block-template');
+        jQuery('.review-block').html('');
+        if ( place.reviews != undefined ) {
+            jQuery.each(place.reviews, function(key, item) {
+                item_template = jQuery(review_block_template).clone();
+                item_template = jQuery('<div>').html(jQuery(item_template).html());
+                item_template.find('.review-block-name').html(item.author_name);
+                item_template.find('.review-block-date').html(item.relative_time_description);
+                // item_template.find('.review-block-title').html(item.text);
+                item_template.find('.review-block-description').html(item.text);
+                item_template.find('.img-rounded').attr('src',item.profile_photo_url);
+
+                item_rates_count = 1;
+                jQuery(item_template.find('.review-block-rate button')).each(function() {
+                    if (item_rates_count <= parseInt(item.rating)) {
+                        jQuery(this).removeClass('btn-grey');
+                        jQuery(this).addClass('btn-warning');
+                    }
+                    item_rates_count++;
+                });
+                jQuery('.review-block').append(item_template);
+            });
+            jQuery('.review-block-master-wrapper').show();
+        } else {
+            jQuery('.review-block-master-wrapper').hide();
+        }
+        jQuery('.rating-block-wrapper').show();
+    },
     createInfoWindow: function(place, currentLocation) {
         // var content = "<div id='iw-container'><div class='iw-title'><b>" + place.name + "</b></div><div class='iw-content'><span>" + place.formatted_address + "</span></br><a href='https://maps.google.com/maps?saddr=" + currentLocation + "&daddr=" + place.formatted_address + "' target='_blank'>Directions</a></div><div>";
-        var content = "<div id='iw-container'><div class='iw-title'><b>" + place.name + "</b></div><div class='iw-content'><span>" + place.formatted_address + "</span></br><div id='get_directions' style='color:blue;'onlick='MapRenderer.calculateAndDisplayRoute(MapRenderer.directionsService, MapRenderer.directionsDisplay, place)'>Get Directions</div></div><div>";
+        var content = "<div id='iw-container'><div class='iw-title'><b>" + place.name + "</b></div><div class='iw-content'><span>" + place.formatted_address + "</span></br><div id='get_directions'>Get Directions</div></div><div>";
         return content;
     },
     stylizeInfoWindow: function() {
@@ -345,7 +388,6 @@ var MapRenderer = {
                         _self.place = place;
                     }
                 });
-                console.log(place.geometry);
                 if (!place.geometry) {
                     console.log("Returned place contains no geometry");
                     return;
