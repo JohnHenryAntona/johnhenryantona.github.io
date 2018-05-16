@@ -615,6 +615,7 @@ var MapRenderer = {
 
         _self.stylizeInfoWindow();
         marker_click = google.maps.event.addListener(centerMarker, 'click', function() {
+            _self.stylizeInfoWindow(marker,'');
             _self.infoWindow.setContent(_self.createInfoWindow(marker));
             centerInfo.open(_self.map, centerMarker);
         });
@@ -635,7 +636,8 @@ var MapRenderer = {
         return this.centerMarker;
     },
     createCenterInfo: function(){
-        contentCenter = '<span class="infowin">Center Marker (draggable)</span>';
+        contentCenter = "<div id='iw-container'><div class='iw-title'><b>Center Marker</b></div><div class='iw-content'>(draggable)</div><div>";
+        // contentCenter = '<span class="infowin">Center Marker (draggable)</span>';
         centerInfo = new google.maps.InfoWindow({
             content: contentCenter
         });
