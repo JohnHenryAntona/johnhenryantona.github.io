@@ -12,7 +12,7 @@ var MapRenderer = {
             lat: 10.3180285, //10.3157,//
             lng: 123.8901931, //123.8854,//
         },
-        zoom: 5
+        zoom: 15
     },
     iconInfo: null,
     specialties: ['bar','café','buffet','pizza','burger','lechon','barbecue','lantaw','seafood','vegetarian','japanese','italian','mexican'],
@@ -37,17 +37,31 @@ var MapRenderer = {
     drawerPanel: null,
     drawingModes: null,
     drawingModesDefault: [],
+    moreButton: null,
+    pagination: null,
+    getNextPage: null,
     init: function() {
         this.map = new google.maps.Map(document.getElementById('map'), this.mapOptions);
         this.infoWindow = new google.maps.InfoWindow();
         this.bounds = new google.maps.LatLngBounds();
         this.service = new google.maps.places.PlacesService(this.map);
-        this.service.textSearch({
+        
+        // var getNextPage = null;
+        var _self = MapRenderer;
+        this.moreButton = document.getElementById('more');
+        this.moreButton.onclick = function() {
+          _self.moreButton.disabled = true;
+          if (_self.getNextPage) _self.pagination.nextPage();
+        };
+
+        this.service.radarSearch({
             location: this.mapOptions.center,
-            radius: 5000,
+            radius: 15000,
+            keyword: 'restaurant+in+cebu',
             query: 'restaurant',
             type: ['restaurant', 'food']
         }, this.callback);
+
         // Create the search box and link it to the UI element.
         var input = document.getElementById('search-input'),
         request;
@@ -72,151 +86,195 @@ var MapRenderer = {
         // Listen for the event fired when the user selects a prediction and retrieve
         // more details for that place.
         this.listenPlacesChange();
-
-        // var drawingManager = new google.maps.drawing.DrawingManager({
-        //   drawingMode: google.maps.drawing.OverlayType.MARKER,
-        //   drawingControl: true,
-        //   drawingControlOptions: {
-        //     position: google.maps.ControlPosition.TOP_CENTER,
-        //     drawingModes: ['marker', 'circle', 'polygon', 'polyline', 'rectangle']
-        //   },
-        //   markerOptions: {icon: 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png'},
-        //   circleOptions: {
-        //     fillColor: '#ffff00',
-        //     fillOpacity: 1,
-        //     strokeWeight: 5,
-        //     clickable: false,
-        //     editable: true,
-        //     zIndex: 1
-        //   }
-        // });
-        // drawingManager.setMap(this.map);
+        // this.map.addListener('idle', this.performSearch);
+        
     },
-    loadDrawer: function() {
-        return this.createPanel().show();
+    performSearch: function() {
+        var _self = MapRenderer;
+        _self.moreButton.click();
     },
-    isMarkerInbound: function(circle, marker) {
-        bounds = circle.getBounds();
-        markPosition = marker.position;
-        latLngPos = new google.maps.LatLng(marker.position.lat(), marker.position.lng());
-        /**
-         * A google.maps.LatLngBounds is a rectangle.
-         * You need a polygon "contains" function.
-         * For a circle this can be reduced to testing whether
-         * the point is less than the radius away from the center.
-         */
-        distanceBetween = (google.maps.geometry.spherical.computeDistanceBetween(marker.getPosition(), circle.getCenter()) <= circle.getRadius());
-        return distanceBetween;
-        // return bounds.contains(latLngPos);
-    },
-    callback: function(results, status) {
+    callback: function(results, status, pagination) {
         this.bounds = new google.maps.LatLngBounds();
         var _self = MapRenderer;
+                _self.pagination = pagination;
         if (status === google.maps.places.PlacesServiceStatus.OK) {
+            console.log(results);
             for (var i = 0; i < results.length; i++) {
-                var details = _self.service.getDetails({
-                    placeId: results[i].place_id
-                }, function(place, status) {
+              // var details = _self.service.getDetails({
+              //       placeId: results[i].place_id
+              //   }, function(place, status) {
                     if (status === google.maps.places.PlacesServiceStatus.OK) {
-                        _self.place = place;
+                        _self.place = results[i];
+                        _self.markerGroups.restaurants.push(results[i]);
+                        // setTimeout(function() {
+                            // _self.createMarker(results[i], i);
+                            // console.log(i);
+                        // }, 1000);
                     }
-                });
-                if (!results[i].geometry) {
-                    console.log("Returned place contains no geometry");
-                    return;
-                }
+                // });
+                // _self.createMarker(results[i]);
+            //   var places = _self.markerGroups.restaurants;
+            // for (var j = 0; j >= places; j++) {
+            //     _self.bounds.extend(results[j].geometry.location);
+            // }
+            //   (function (j) {
+            //     var request = {
+            //         placeId: results[i]['place_id']
+            //     };
 
-                // Create markers and plot to map
-                _self.createMarker(results[i]);
-                _self.bounds.extend(results[i].geometry.location);
+            //     _self.service = new google.maps.places.PlacesService(map);
+            //     setTimeout(function() {
+            //         service.getDetails(request, callback);
+            //     }, j*1000);
+
+
+            // })(i);
+
+            // function callback(place, status) {
+            //     if (status == google.maps.places.PlacesServiceStatus.OK) {
+            //         createMarker(place);
+            //         console.log(place.name +  results.length + agencies.length);
+            //         agencies.push([place.name, place.website, place.rating]);
+
+            //         if(results.length == agencies.length){
+            //             console.log(agencies);
+            //             var request = new XMLHttpRequest();
+            //             request.open('POST', 'http://localhost/agency-map/src/save.php', true);
+            //             request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+            //             request.send(JSON.stringify(agencies));
+            //         }
+            //     }
+            // }
+              //   var details = _self.service.getDetails({
+              //       placeId: results[i].place_id
+              //   }, function(place, status) {
+              //       if (status === google.maps.places.PlacesServiceStatus.OK) {
+              //           _self.place = place;
+              //       }
+              //   });
+              //   if (!results[i].geometry) {
+              //       console.log("Returned place contains no geometry");
+              //       return;
+              //   }
+              //   // Create markers and plot to map
+              //   _self.createMarker(results[i]);
+              //   _self.moreButton.disabled = !pagination.hasNextPage;
+              // _self.getNextPage = pagination.hasNextPage && function() {
+              //   _self.getNextPage = true;
+              //   sleep:2;
+              //   pagination.nextPage();
+              // };
+                // _self.bounds.extend(results[i].geometry.location);
             }
-            _self.map.fitBounds(_self.bounds);
+
+            // _self.map.fitBounds(_self.bounds);
+        _self.createMarkers(_self.markerGroups.restaurants);
         }
 
     },
-    createMarker: function(place) {
+    createMarkers: function(places) {
         var _self = MapRenderer;
-        this.iconInfo = {
-            url: 'assets/images/icon.png',
-            origin: new google.maps.Point(0, 0),
-            anchor: new google.maps.Point(17, 34),
-            scaledSize: new google.maps.Size(40, 40)
-        };
-        var marker = new google.maps.Marker({
-            map: this.map,
-            icon: this.iconInfo,
-            title: place.name,
-            position: place.geometry.location,
-            animation: google.maps.Animation.DROP,
-        });
+        // var details = _self.service.getDetails({
+        //     placeId: place.place_id
+        // }, function(place, status) {
+        // if (status === google.maps.places.PlacesServiceStatus.OK) {
+            for (var i = 0; i < places.length; i++) {
+                var details = _self.service.getDetails({
+                    placeId: places[i].place_id
+                }, function(place, status) {
+                    _self.markerGroups.restaurants[i] = place;
+                    var places = _self.markerGroups.restaurants;
+                    console.log(place);
+                    setTimeout(function() {
+                        _self.place = places[i];
+                        _self.iconInfo = {
+                            url: 'assets/images/icon.png',
+                            origin: new google.maps.Point(0, 0),
+                            anchor: new google.maps.Point(17, 34),
+                            scaledSize: new google.maps.Size(50, 50)
+                        };
+                        var marker = new google.maps.Marker({
+                            map: _self.map,
+                            icon: _self.iconInfo,
+                            title: places[i].name,
+                            position: places[i].geometry.location,
+                            animation: google.maps.Animation.DROP,
+                        });
 
-        _self.place = marker;
-        marker.filter = 'all';
-        marker.properties = {};
-        marker.properties.inbound = false;
-        marker.properties.outbound = false;
-        this.specialties.forEach(function(index){
-            if ( _self.place.title.indexOf(camelize(index)) > -1 ) {
-                marker.filter = index;
-                if ( _self.place.title.indexOf('Yakiniku') > -1 && index == 'japanese') {
-                    marker.filter = index;
-                }
-            }
-            if ( _self.place.title.indexOf('Cafe') > -1 && index == 'café') {
-                marker.filter = index;
-            }
-        });
-        _self.place = null;
-
-        _self.markerGroups.restaurants.push(marker);
-
-        _self.bounds.extend(marker.position);
-
-        if (place.geometry.viewport) {
-            // Only geocodes have viewport.
-            _self.bounds.union(place.geometry.viewport);
-        } else {
-            _self.bounds.extend(place.geometry.location);
-        }
-
-        // Add custom css on info window and render contents
-        _self.stylizeInfoWindow();
-        var currentLocation = 'current+location';
-        marker.infoWindow = _self.createInfoWindow(place, currentLocation);
-
-        google.maps.event.addListener(marker, 'click', function() {
-            // _self.map.setZoom(12);
-            _self.infoWindow.setContent(_self.createInfoWindow(place, currentLocation));
-            _self.infoWindow.open(_self.map, this);
-        });
-
-        _self.specialties.forEach(function(index){
-            google.maps.event.addDomListener(document.getElementById(index),
-                'click', function() {
-                    var value = jQuery(this).val();
-                    if ( jQuery('#'+value.toLowerCase()+':checked').length == 0 ) {
-                        _self.currentFilters.pop(index);
-                    } else {
-                        _self.currentFilters.push(index);
-                    }
-                    _self.filterStatus = 0;
-                    if ( !_self.filters[index] ) {
-                      _self.filters[index] = true;
-                    } else {
-                        if ( _self.currentFilters.indexOf(index) > -1 ) {
-                            _self.filters[index] = true;
-                        } else {
-                            if ( _self.filterStatus == 0 ) {
-                                _self.filters[index] = false;
-                                _self.currentFilters.pop(index);
+                        _self.place = marker;
+                        marker.filter = 'all';
+                        marker.properties = {};
+                        marker.properties.inbound = false;
+                        marker.properties.outbound = false;
+                        marker.geometry = places[i].geometry;
+                        _self.specialties.forEach(function(index){
+                            if ( _self.markerGroups.restaurants[i].name.indexOf(camelize(index)) > -1 ) {
+                                marker.filter = index;
+                                if ( _self.markerGroups.restaurants[i].name.indexOf('Yakiniku') > -1 && index == 'japanese') {
+                                    marker.filter = index;
+                                }
                             }
+                            if ( _self.markerGroups.restaurants[i].name.indexOf('Cafe') > -1 && index == 'café') {
+                                marker.filter = index;
+                            }
+                        });
+                        _self.place = null;
+
+                        _self.markerGroups.restaurants.push(marker);
+
+                        _self.bounds.extend(marker.geometry.location);
+
+                        if (marker.geometry.viewport) {
+                            // Only geocodes have viewport.
+                            _self.bounds.union(places[i].geometry.viewport);
+                        } else {
+                            _self.bounds.extend(places[i].geometry.location);
                         }
-                    }
-                    if ( _self.filterStatus == 0 ) {
-                        _self.toggleMarkerGroup(index);
-                    }
-            });
-        });
+
+                        // Add custom css on info window and render contents
+                        _self.stylizeInfoWindow();
+                        var currentLocation = 'current+location';
+                        marker.infoWindow = _self.createInfoWindow(places[i], currentLocation);
+
+                        google.maps.event.addListener(marker, 'click', function() {
+                            // _self.map.setZoom(12);
+                            _self.infoWindow.setContent(_self.createInfoWindow(places[i], currentLocation));
+                            _self.infoWindow.open(_self.map, this);
+                        });
+
+                        _self.specialties.forEach(function(index){
+                            google.maps.event.addDomListener(document.getElementById(index),
+                                'click', function() {
+                                    var value = jQuery(this).val();
+                                    if ( jQuery('#'+value.toLowerCase()+':checked').length == 0 ) {
+                                        _self.currentFilters.pop(index);
+                                    } else {
+                                        _self.currentFilters.push(index);
+                                    }
+                                    _self.filterStatus = 0;
+                                    if ( !_self.filters[index] ) {
+                                      _self.filters[index] = true;
+                                    } else {
+                                        if ( _self.currentFilters.indexOf(index) > -1 ) {
+                                            _self.filters[index] = true;
+                                        } else {
+                                            if ( _self.filterStatus == 0 ) {
+                                                _self.filters[index] = false;
+                                                _self.currentFilters.pop(index);
+                                            }
+                                        }
+                                    }
+                                    if ( _self.filterStatus == 0 ) {
+                                        _self.toggleMarkerGroup(index);
+                                    }
+                            });
+                        });
+                    }, i*1000);
+                });
+            }
+            _self.map.fitBounds(_self.bounds);
+        // }
+        // });
     },
     createInfoWindow: function(place, currentLocation) {
         var content = "<div id='iw-container'><div class='iw-title'><b>" + place.name + "</b></div><div class='iw-content'><span>" + place.formatted_address + "</span></br><a href='https://maps.google.com/maps?saddr=" + currentLocation + "&daddr=" + place.formatted_address + "' target='_blank'>Directions</a></div><div>";
@@ -225,6 +283,9 @@ var MapRenderer = {
     stylizeInfoWindow: function() {
         google.maps.event.addListener(this.infoWindow, 'domready', function() {
             var iwOuter = jQuery('.gm-style-iw');
+            iwOuter.css({
+                'font-size': '16px'
+            });
             var iwCloseBtn = iwOuter.next();
             var iwBackground = iwOuter.prev();
 
@@ -278,6 +339,7 @@ var MapRenderer = {
                         _self.place = place;
                     }
                 });
+                console.log(place.geometry);
                 if (!place.geometry) {
                     console.log("Returned place contains no geometry");
                     return;
@@ -300,6 +362,23 @@ var MapRenderer = {
 
         });
         this.filterStatus = 1;
+    },
+    loadDrawer: function() {
+        return this.createPanel().show();
+    },
+    isMarkerInbound: function(circle, marker) {
+        bounds = circle.getBounds();
+        markPosition = marker.position;
+        latLngPos = new google.maps.LatLng(marker.position.lat(), marker.position.lng());
+        /**
+         * A google.maps.LatLngBounds is a rectangle.
+         * You need a polygon "contains" function.
+         * For a circle this can be reduced to testing whether
+         * the point is less than the radius away from the center.
+         */
+        distanceBetween = (google.maps.geometry.spherical.computeDistanceBetween(marker.getPosition(), circle.getCenter()) <= circle.getRadius());
+        return distanceBetween;
+        // return bounds.contains(latLngPos);
     },
     resetFilters: function() {
         for (option in this.filters) {

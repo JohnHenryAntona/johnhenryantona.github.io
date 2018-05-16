@@ -91,8 +91,9 @@ html, body {
 }
 
 .search-section .search-list {
+    height: 100vh;
     top: 0;
-    width: 35%;/*380px;*/
+    width: 22%;
     max-width: 90%;
     position: absolute;
     background: rgba(162, 167, 169, 0.8);
@@ -149,7 +150,8 @@ html, body {
 }
 
 .search-section .search-map-wrapper {
-    height: 637px; /*600px;*/
+    /*height: 637px; */
+    height: 100vh;
 }
 
 .search-section .search-list-header-wrapper {
@@ -175,8 +177,8 @@ html, body {
 }
 
 .search-section .search-list-wrapper {
-    overflow-y: auto;
-    overflow-x: hidden;
+    /*overflow-y: auto;
+    overflow-x: hidden;*/
     color: #fff;
     height: 602px; /*560px;*/
 }
@@ -185,6 +187,11 @@ html, body {
     border: 0;
     padding: 10px;
     background: rgba(0, 0, 0, 0.2);
+}
+
+.search-section .search-list-wrapper .collapsible .collapsible-body.filters-body {
+    height: 50vh;
+    overflow-x: auto;
 }
 
 .search-list-wrapper ul {
@@ -213,7 +220,7 @@ html, body {
 
 .collapsible-header:after {
     content: '-';
-    font-size: 20px;
+    font-size: 26px;
     color: #e9f0f3;
     position: absolute;
     right: 20px;
@@ -260,6 +267,7 @@ html, body {
 }
 
 #filters label {
+    font-size: 15px;
     color: #e2dfd5;
     font-weight: normal;
     width: 50%;
