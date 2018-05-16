@@ -92,17 +92,17 @@ var MapRenderer = {
         }
     },
     calculateAndDisplayRoute: function(directionsService, directionsDisplay, place) {
-        // var selectedMode = document.getElementById('mode').value;
+        var _self = MapRenderer;
         this.directionsService.route({
           origin: this.currentPosition,  // Haight.
-          destination: {lat: -24.345, lng: 134.46},//{lat: place.geometry.location.lat(), lng: place.geometry.location.lng()},  // Ocean Beach.
+          destination: {lat: place.geometry.location.lat(), lng: place.geometry.location.lng()},  // Ocean Beach.
           // Note that Javascript allows us to access the constant
           // using square brackets and a string value as its
           // "property."
           travelMode: google.maps.TravelMode['DRIVING']
         }, function(response, status) {
           if (status == 'OK') {
-            this.directionsDisplay.setDirections(response);
+            _self.directionsDisplay.setDirections(response);
           } else {
             window.alert('Directions request failed due to ' + status);
           }
